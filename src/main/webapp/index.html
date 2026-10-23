@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Task Management System | Java Collections & JDBC</title>
+    <meta name="description" content="Full-Stack Employee Task Management System using Java Collections, JDBC, and MySQL.">
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h2>TaskSphere</h2>
+                    <span>Java & JDBC System</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <div class="menu-label">Main Navigation</div>
+                <button class="nav-item active" data-view="dashboard" id="navDashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="employees" id="navEmployees">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Employees</span>
+                    <span class="badge badge-subtle" id="navEmpCount">0</span>
+                </button>
+                <button class="nav-item" data-view="tasks" id="navTasks">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>All Tasks</span>
+                    <span class="badge badge-subtle" id="navTaskCount">0</span>
+                </button>
+                <button class="nav-item" data-view="assignTask" id="navAssignTask">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <span>Assign Task</span>
+                </button>
+
+                <div class="menu-label">Collections Views</div>
+                <button class="nav-item" data-view="priorityTasks" id="navPriority">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Priority Queue</span>
+                    <span class="pill-tag">PriorityQueue</span>
+                </button>
+                <button class="nav-item" data-view="employeeTasks" id="navEmployeeTasks">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 12l-4-4-4 4M12 16V8"/></svg>
+                    <span>Employee Map</span>
+                    <span class="pill-tag">HashMap</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="db-status-card" id="dbStatusCard">
+                    <div class="status-indicator online" id="dbIndicator"></div>
+                    <div class="status-info">
+                        <strong id="dbStatusLabel">MySQL Connected</strong>
+                        <span id="dbSubtext">employee_task_management</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-wrapper">
+            <!-- Top Navbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Navigation">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="page-title-box">
+                        <h1 id="pageHeading">Dashboard Overview</h1>
+                        <p id="pageSubheading">Real-time statistics & task monitoring</p>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="globalSearch" placeholder="Search tasks or employees...">
+                    </div>
+                    <button class="btn btn-primary" id="btnQuickAdd">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>New Task</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Notification Banner (Shows if MySQL connection needs configuration) -->
+            <div class="banner banner-warning hidden" id="dbWarningBanner">
+                <div class="banner-content">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div>
+                        <strong>Database Notice:</strong>
+                        <span id="dbWarningText">Could not connect to MySQL. Please set your password in <code>database.properties</code>.</span>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-ghost" id="btnRetryDb">Retry Connection</button>
+            </div>
+
+            <!-- Page Views Container -->
+            <div class="content-container">
+
+                <!-- 1. DASHBOARD VIEW -->
+                <section class="view-section active" id="viewDashboard">
+                    <!-- KPI Metric Cards Grid -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card" style="--accent-color: #6366f1;">
+                            <div class="kpi-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                            </div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Total Employees</span>
+                                <span class="kpi-value" id="kpiEmployees">0</span>
+                                <span class="kpi-foot">Active team members</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card" style="--accent-color: #3b82f6;">
+                            <div class="kpi-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            </div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Total Tasks</span>
+                                <span class="kpi-value" id="kpiTasks">0</span>
+                                <span class="kpi-foot" id="kpiCompletionRate">0% completed</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card" style="--accent-color: #f59e0b;">
+                            <div class="kpi-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Pending</span>
+                                <span class="kpi-value" id="kpiPending">0</span>
+                                <span class="kpi-foot">Awaiting start</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card" style="--accent-color: #06b6d4;">
+                            <div class="kpi-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/></svg>
+                            </div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">In Progress</span>
+                                <span class="kpi-value" id="kpiInProgress">0</span>
+                                <span class="kpi-foot">Actively working</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card" style="--accent-color: #10b981;">
+                            <div class="kpi-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Completed</span>
+                                <span class="kpi-value" id="kpiCompleted">0</span>
+                                <span class="kpi-foot">Delivered tasks</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card" style="--accent-color: #ef4444;">
+                            <div class="kpi-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Overdue Tasks</span>
+                                <span class="kpi-value" id="kpiOverdue">0</span>
+                                <span class="kpi-foot text-danger">Action required</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Collections Architecture Info Banner -->
+                    <div class="collections-banner">
+                        <div class="collections-badge">
+                            <span class="dot-live"></span>
+                            Java Collections & JDBC Demonstration
+                        </div>
+                        <div class="collections-desc">
+                            This full-stack system loads real data from <strong>MySQL</strong> via <strong>JDBC PreparedStatement</strong>, maps entities with <code>ArrayList&lt;Task&gt;</code>, groups assignments with <code>HashMap&lt;Integer, ArrayList&lt;Task&gt;&gt;</code>, and prioritizes urgent items using <code>PriorityQueue&lt;Task&gt;</code> (Min-Heap based on priority weight & deadline).
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Grid: Priority Tasks & Quick Summary -->
+                    <div class="dashboard-sections-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <h3>Urgent Priorities (Top PriorityQueue Tasks)</h3>
+                                    <span>Sorted by HIGH &gt; MEDIUM &gt; LOW and earliest deadline</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline" data-action="goToPriority">View All</button>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="dashboardPriorityTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Task Title</th>
+                                                <th>Assignee</th>
+                                                <th>Priority</th>
+                                                <th>Deadline</th>
+                                                <th>Tracking</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashboardPriorityBody">
+                                            <tr><td colspan="7" class="text-center">Loading priority tasks...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. EMPLOYEES MANAGEMENT VIEW -->
+                <section class="view-section" id="viewEmployees">
+                    <div class="section-actions-bar">
+                        <div class="actions-left">
+                            <div class="input-with-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" id="employeeSearchInput" placeholder="Search by ID, name, email, department...">
+                            </div>
+                        </div>
+                        <div class="actions-right">
+                            <button class="btn btn-primary" id="btnOpenAddEmployee">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span>Add Employee</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="data-table" id="employeesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Emp ID</th>
+                                            <th>Employee Name</th>
+                                            <th>Email Address</th>
+                                            <th>Department</th>
+                                            <th>Assigned Tasks</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="employeesTableBody">
+                                        <tr><td colspan="6" class="text-center">Loading employees...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. ALL TASKS VIEW -->
+                <section class="view-section" id="viewTasks">
+                    <div class="section-actions-bar">
+                        <div class="actions-left">
+                            <div class="input-with-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" id="taskSearchInput" placeholder="Search tasks by title, description, assignee...">
+                            </div>
+
+                            <select class="form-control" id="taskPriorityFilter">
+                                <option value="ALL">All Priorities</option>
+                                <option value="HIGH">High Priority</option>
+                                <option value="MEDIUM">Medium Priority</option>
+                                <option value="LOW">Low Priority</option>
+                            </select>
+
+                            <select class="form-control" id="taskStatusFilter">
+                                <option value="ALL">All Statuses</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="IN PROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                        </div>
+                        <div class="actions-right">
+                            <button class="btn btn-primary" id="btnOpenAssignTask">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span>Assign New Task</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="data-table" id="allTasksTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Task ID</th>
+                                            <th>Title & Details</th>
+                                            <th>Assignee</th>
+                                            <th>Priority</th>
+                                            <th>Deadline</th>
+                                            <th>Tracking</th>
+                                            <th>Status</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allTasksTableBody">
+                                        <tr><td colspan="8" class="text-center">Loading tasks...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. ASSIGN TASK VIEW -->
+                <section class="view-section" id="viewAssignTask">
+                    <div class="form-card-container">
+                        <div class="form-panel">
+                            <div class="form-panel-header">
+                                <h2>Assign New Task</h2>
+                                <p>Create a task and assign it to a team member in MySQL.</p>
+                            </div>
+                            <form id="assignTaskForm" class="styled-form">
+                                <div class="form-row two-col">
+                                    <div class="form-group">
+                                        <label for="taskFormId">Task ID <span class="required">*</span></label>
+                                        <input type="number" id="taskFormId" class="form-control" placeholder="e.g. 1007" required>
+                                        <small class="form-hint">Must be a unique positive integer.</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskFormEmployee">Assign to Employee <span class="required">*</span></label>
+                                        <select id="taskFormEmployee" class="form-control" required>
+                                            <option value="">-- Select Employee --</option>
+                                        </select>
+                                        <small class="form-hint">Employee must exist in MySQL.</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="taskFormTitle">Task Title <span class="required">*</span></label>
+                                    <input type="text" id="taskFormTitle" class="form-control" placeholder="e.g. Implement Payment Gateway Integration" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="taskFormDesc">Description</label>
+                                    <textarea id="taskFormDesc" class="form-control" rows="3" placeholder="Provide detailed task requirements, specifications, or deliverables..."></textarea>
+                                </div>
+
+                                <div class="form-row three-col">
+                                    <div class="form-group">
+                                        <label for="taskFormPriority">Priority <span class="required">*</span></label>
+                                        <select id="taskFormPriority" class="form-control" required>
+                                            <option value="HIGH">HIGH (Urgent)</option>
+                                            <option value="MEDIUM" selected>MEDIUM (Normal)</option>
+                                            <option value="LOW">LOW (Backlog)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskFormDeadline">Deadline Date <span class="required">*</span></label>
+                                        <input type="date" id="taskFormDeadline" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskFormStatus">Initial Status <span class="required">*</span></label>
+                                        <select id="taskFormStatus" class="form-control" required>
+                                            <option value="PENDING" selected>PENDING</option>
+                                            <option value="IN PROGRESS">IN PROGRESS</option>
+                                            <option value="COMPLETED">COMPLETED</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" id="btnCancelAssign">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" id="btnSubmitAssign">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span>Create & Assign Task</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. PRIORITY TASKS VIEW (PriorityQueue demonstration) -->
+                <section class="view-section" id="viewPriorityTasks">
+                    <div class="collections-explain-card">
+                        <div class="explain-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <div class="explain-content">
+                            <h3>PriorityQueue&lt;Task&gt; Execution</h3>
+                            <p>
+                                Active pending and in-progress tasks are processed through a Java <code>PriorityQueue&lt;Task&gt;</code> min-heap.
+                                Elements are ordered primarily by priority rank (<strong>HIGH &gt; MEDIUM &gt; LOW</strong>) and secondary by <strong>earliest deadline date</strong>. Completed tasks are automatically excluded from the dispatch queue.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h3>Organized Priority Queue</h3>
+                                <span>Dynamically sorted via TaskManager.getSortedPriorityTasks()</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline" id="btnRefreshPriority">Refresh Queue</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="data-table" id="priorityQueueTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Queue Rank</th>
+                                            <th>Task ID</th>
+                                            <th>Task Title</th>
+                                            <th>Assignee</th>
+                                            <th>Priority</th>
+                                            <th>Deadline</th>
+                                            <th>Health</th>
+                                            <th>Status</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="priorityQueueBody">
+                                        <tr><td colspan="9" class="text-center">Loading priority queue...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. EMPLOYEE TASKS VIEW (HashMap demonstration) -->
+                <section class="view-section" id="viewEmployeeTasks">
+                    <div class="collections-explain-card">
+                        <div class="explain-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        </div>
+                        <div class="explain-content">
+                            <h3>HashMap&lt;Integer, ArrayList&lt;Task&gt;&gt; Mapping</h3>
+                            <p>
+                                Demonstrates relational indexing in memory: all tasks retrieved via JDBC are mapped by key <code>Employee ID -&gt; ArrayList&lt;Task&gt;</code>. Select an employee below to inspect their assigned tasks directly from the HashMap.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="filter-card">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1; max-width: 400px;">
+                                <label for="employeeMapSelect"><strong>Select Employee:</strong></label>
+                                <select id="employeeMapSelect" class="form-control">
+                                    <option value="">-- Choose Employee --</option>
+                                </select>
+                            </div>
+                            <div class="employee-meta-summary" id="empMetaSummary">
+                                <div class="meta-item">
+                                    <span class="meta-label">Selected Department:</span>
+                                    <strong class="meta-val" id="empMetaDept">-</strong>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Email:</span>
+                                    <strong class="meta-val" id="empMetaEmail">-</strong>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Total Assigned:</span>
+                                    <strong class="meta-val" id="empMetaTaskCount">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h3 id="employeeMapTitle">Assigned Tasks</h3>
+                                <span>Retrieved from HashMap&lt;Integer, ArrayList&lt;Task&gt;&gt;</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="data-table" id="employeeTasksTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Task ID</th>
+                                            <th>Task Title</th>
+                                            <th>Priority</th>
+                                            <th>Deadline</th>
+                                            <th>Health</th>
+                                            <th>Status</th>
+                                            <th>Completed Date</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="employeeTasksBody">
+                                        <tr><td colspan="8" class="text-center">Select an employee above to view mapped tasks.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: Add / Edit Employee -->
+    <div class="modal-overlay" id="employeeModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="employeeModalTitle">Add New Employee</h3>
+                <button class="modal-close" data-close-modal>&times;</button>
+            </div>
+            <form id="employeeForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="empModalId">Employee ID <span class="required">*</span></label>
+                        <input type="number" id="empModalId" class="form-control" placeholder="e.g. 105" required>
+                        <small class="form-hint">Unique numerical identifier in MySQL.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="empModalName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="empModalName" class="form-control" placeholder="e.g. Sarah Connor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="empModalEmail">Email Address <span class="required">*</span></label>
+                        <input type="email" id="empModalEmail" class="form-control" placeholder="e.g. sarah.connor@company.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="empModalDept">Department <span class="required">*</span></label>
+                        <input type="text" id="empModalDept" class="form-control" placeholder="e.g. Engineering, Product, QA" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveEmployee">Save Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Edit Task -->
+    <div class="modal-overlay" id="editTaskModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Edit Task Details</h3>
+                <button class="modal-close" data-close-modal>&times;</button>
+            </div>
+            <form id="editTaskForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editTaskId">
+                    <div class="form-group">
+                        <label for="editTaskTitle">Task Title <span class="required">*</span></label>
+                        <input type="text" id="editTaskTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTaskDesc">Description</label>
+                        <textarea id="editTaskDesc" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="editTaskEmp">Assignee <span class="required">*</span></label>
+                            <select id="editTaskEmp" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTaskPriority">Priority <span class="required">*</span></label>
+                            <select id="editTaskPriority" class="form-control" required>
+                                <option value="HIGH">HIGH</option>
+                                <option value="MEDIUM">MEDIUM</option>
+                                <option value="LOW">LOW</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="editTaskDeadline">Deadline Date <span class="required">*</span></label>
+                            <input type="date" id="editTaskDeadline" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTaskStatus">Status <span class="required">*</span></label>
+                            <select id="editTaskStatus" class="form-control" required>
+                                <option value="PENDING">PENDING</option>
+                                <option value="IN PROGRESS">IN PROGRESS</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
